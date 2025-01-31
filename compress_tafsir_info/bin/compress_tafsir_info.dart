@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 
 void main(List<String> arguments) async {
-  Directory spitedTafsirDataFolder = Directory("splited_tafsir_data");
+  Directory spitedTafsirDataFolder = Directory("all_translations");
   List<FileSystemEntity> filesList = spitedTafsirDataFolder.listSync();
   for (int index = 0; index < filesList.length; index++) {
     FileSystemEntity file = filesList[index];
@@ -14,11 +14,22 @@ void main(List<String> arguments) async {
     var jsonFile = File(file.path);
 
     String jsonString = await jsonFile.readAsString();
-    String compressedString = compressStringWithGZip(jsonString);
-    await File("full_file_compression/${file.path.split("/").last}")
+    // String compressedString = compressStringWithGZip(jsonString);
+    String compressedString =
+        compressStringWithGZip(jsonEncode(translationAyah(jsonString)));
+    await File("full_file_compression_trans/${file.path.split("/").last}")
         .writeAsString(jsonEncode(compressedString));
     log("$index Done ${file.parent}", name: "Success");
   }
+}
+
+List<String> translationAyah(String text) {
+  List<Map> listMap = List<Map>.from(jsonDecode(text)['translations']);
+  List<String> ayahs = [];
+  for (int index = 0; index < listMap.length; index++) {
+    ayahs.add(listMap[index]['text']);
+  }
+  return ayahs;
 }
 
 String compressStringWithGZip(String text) {
